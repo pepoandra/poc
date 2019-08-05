@@ -1,0 +1,296 @@
+<html>
+<head>
+<script>
+
+
+function changeStatus(id, color){
+  document.getElementById(id).style.backgroundColor=color;
+}
+
+function getValue(){
+  document.getElementById('entered_sku').innerText=document.getElementById("sku").value;
+  document.getElementById("first").style.display = "block";
+  updateFlow();
+}
+
+function buyFlow(){
+  document.getElementById("second").style.display="block"
+  document.getElementById("third").style.display="none"
+  document.getElementById("fourth").style.display="none"
+  updateFlow();
+}
+
+function shootFlow(){
+  document.getElementById("second").style.display="none"
+  document.getElementById("third").style.display="block"
+  document.getElementById("fourth").style.display="none"
+  updateFlow();
+}
+
+function sellFlow(){
+  document.getElementById("second").style.display="none"
+  document.getElementById("third").style.display="none"
+  document.getElementById("fourth").style.display="block"
+  updateFlow();
+}
+
+const colors = {
+  "blocked": "red",
+  "in progress": "blue",
+  "to do": "lightgray",
+  "done": "green"
+}
+
+var tasks = {
+  10: {"name": "buy", "status": "to do", "prev": null},
+  20: {"name": "shoot", "status": "blocked", "prev": 10},
+  30: {"name": "sell", "status": "blocked", "prev": 20},
+  1: {"name": "find", "status": "to do", "prev": null},
+  2: {"name": "offer", "status": "blocked", "prev": 1},
+  3: {"name": "purchase", "status": "blocked", "prev": 2},
+  4: {"name": "style", "status": "blocked", "prev": 3},
+  5: {"name": "picture", "status": "blocked", "prev": 4},
+  6: {"name": "retouch", "status": "blocked", "prev": 5},
+  7: {"name": "upload", "status": "blocked", "prev": 6},
+  8: {"name": "send", "status": "blocked", "prev": 7},
+}
+
+function updateMainFlow(){
+//if prev is not done -> blocked
+//elif 0 no task is done/in progress -> to do
+//elif 1 task done or in progress -> in progress
+//else all tasks done-> done
+
+updateStep(10, [1,2,3]);
+updateStep(20, [4,5,6]);
+updateStep(30, [7,8]);
+
+}
+
+
+function updateStep(step, children){
+var done = 0;
+var progress = 0;
+
+  if(tasks[step].prev !== null){
+    if( tasks[tasks[step].prev].status !== "done"){
+      tasks[step].status = "blocked"
+      return;
+    } 
+  }
+
+
+  for(var i = 0 ; i <  children.length ; i++){
+    if( tasks[children[i]].status === "done" ) {
+      done++;
+    }
+    if (tasks[children[i]].status === "in progress" ){
+      progress++;
+    }
+  }
+
+  console.log("done: " + done + "   progrss: " + progress)
+
+  if(done === children.length){
+    tasks[step].status = "done";
+    return;
+  }
+
+  if(done + progress === 0){
+    tasks[step].status = "to do";
+    return;
+  }
+
+  if(done + progress > 0){
+    tasks[step].status = "in progress";
+    return;
+  }
+}
+
+
+function updateTask(task){
+
+
+
+  if(tasks[task].status === "done" || tasks[task].status === "in progress"){
+    return;
+  }
+
+  if( tasks[task].prev === null){
+    tasks[task].status = "to do"
+    return;
+  }
+
+  if( tasks[tasks[task].prev].status !== "done"){
+    tasks[task].status = "blocked"
+  } 
+  else {
+    tasks[task].status = "to do"
+  }
+}
+
+function updateFlow(){
+
+  updateMainFlow();
+
+  for(var a = 1; a < 9; a++){
+    updateTask(a);
+  }
+
+  changeStatus("buy", colors[tasks[10].status]);
+  changeStatus("shoot", colors[tasks[20].status]);
+  changeStatus("sell", colors[tasks[30].status]);
+
+  changeStatus(1, colors[tasks[1].status]);
+  changeStatus(2, colors[tasks[2].status]);
+  changeStatus(3, colors[tasks[3].status]);
+
+  changeStatus(4, colors[tasks[4].status]);
+  changeStatus(5, colors[tasks[5].status]);
+  changeStatus(6, colors[tasks[6].status]);
+
+  changeStatus(7, colors[tasks[7].status]);
+  changeStatus(8, colors[tasks[8].status]);
+
+}
+
+var selected_task;
+function showTask(t){
+  selected_task = t;
+  document.getElementById("name").innerText = tasks[t].name;
+  document.getElementById("status").innerText = tasks[t].status;
+  document.getElementById('task').style.display= "block";
+}
+
+function updateStatus(){
+  const idx = document.getElementsByTagName("select")[0].selectedIndex
+  const status = document.getElementsByTagName("select")[0].options[idx].value
+  tasks[selected_task].status = status;
+  updateFlow();
+  showTask(selected_task);
+}
+
+</script>
+
+</head>
+<body>
+<div id="input">
+    <textarea id="sku" style="resize: none;" ></textarea> 
+    <input value="Enter SKU!" type="submit" id="btn" onclick="getValue();">
+    <p>
+    SKU entered: <span id="entered_sku"></span>
+    </p>
+    <p>
+      <table>
+        <tr>
+          <td><b>Status</b></td> <td><b>Color</b></td>
+        </tr>
+        <tr>
+          <td>To Do</td> <td>Gray</td>
+        </tr>
+        <tr>
+          <td>In Progress</td><td>Blue</td>
+        </tr>
+        <tr>
+          <td>Blocked</td><td>Red</td>
+        </tr>
+        <tr>
+          <td>Done</td><td>Green</td>
+        </tr>
+      </table>
+    </p>
+</div>
+
+
+<div id="first" style="margin-top: 100px; display: none;">
+    <span  id="buy"  onclick='buyFlow();' >
+      Buy
+    </span>
+    <span>
+      --->
+    </span>
+    <span id="shoot"  onclick='shootFlow();' >
+    Shoot
+    </span>
+    <span>
+        --->
+    </span>
+    <span  id="sell"  onclick='sellFlow();' >
+      Sell
+    </span>
+  </div>
+
+  <div id="second" style="margin-top: 100px; display: none;">
+      <span  id="1"  onclick="showTask(this.id)" >
+        find stuff 
+      </span>
+      <span>
+        --->
+      </span>
+      <span id="2"  onclick="showTask(this.id)" >
+      offer money
+      </span>
+      <span>
+          --->
+      </span>
+      <span  id="3" onclick="showTask(this.id)" >
+        purchase item
+      </span>
+    </div>
+
+  <div id="third" style="margin-top: 100px; display: none;">
+      <span  id="4"  onclick="showTask(this.id)" >
+        style item
+      </span>
+      <span>
+        --->
+      </span>
+      <span id="5"  onclick="showTask(this.id)" >
+      Take picture
+      </span>
+      <span>
+          --->
+      </span>
+      <span  id="6"  onclick="showTask(this.id)" >
+        retouch
+      </span>
+    </div>
+
+  <div id="fourth" style="margin-top: 100px; display: none;">
+      <span  id="7" onclick="showTask(this.id)" >
+        upload to website
+      </span>
+      <span>
+        --->
+      </span>
+      <span id="8"  onclick="showTask(this.id)" >
+      send item
+      </span>
+    </div>
+
+  <div id="task" style="margin-top: 50px; display: none;" >
+      <table>
+          <tr>
+            <td><b>Status</b></td> <td><b>Color</b></td>
+          </tr>
+          <tr>
+            <td>Name</td> <td id="name"></td>
+          </tr>
+          <tr>
+            <td>Status</td><td id="status"></td>
+          </tr>
+          <tr>
+            <td>
+              <select>
+                <option value="to do">to do</option>
+                <option value="in progress">in progress</option>
+                <option value="blocked">blocked</option>
+                <option value="done">done</option>
+              </select>
+            </td>   <td><input type="submit" value="Update" onclick="updateStatus()"> </td>
+          </tr>
+
+        </table>
+  </div>
+</body>
+</html>
